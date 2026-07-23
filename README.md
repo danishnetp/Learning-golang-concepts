@@ -6,3 +6,4 @@
 	
 # Execute go file:
 #	go run main.go
+#   short-cut in Visual Studio: function + f5 (window)

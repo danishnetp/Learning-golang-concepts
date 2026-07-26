@@ -110,4 +110,22 @@ func main() {
 		Host: "localhost",
 	}
 	fmt.Printf("Anonymous config: %+v\n", config)
+
+	// Embedded struct example with method call.
+	emp := Employee{
+		Person: NewPerson("Dave", 35),
+		Role:   "DevOps Engineer",
+		Skills: []string{"Kubernetes", "Terraform"},
+	}
+	fmt.Println(emp.Greet()) // Calls the embedded Person's Greet method.
+
+	// Embedded struct with Employee and Address.
+	company := Company{
+		Name: "Tech Solutions",
+		Address: Address{
+			City:    "Bandung",
+			Country: "Indonesia",
+		},
+	}
+	fmt.Printf("Company: %s located in %s, %s\n", company.Name, company.Address.City, company.Address.Country) // Output: Company: Tech Solutions located in Bandung, Indonesia
 }

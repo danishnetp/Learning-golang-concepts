@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"os"
 )
 
@@ -34,8 +36,11 @@ func main() {
 	fmt.Println("Permissions:", fileInfo.Mode())
 	fmt.Println("Last Modified:", fileInfo.ModTime())
 
-	// Close the created file when the function exits.
-	defer f1.Close()
+	// Close it now so the later copy step can recreate/write the same file safely.
+	if err := f1.Close(); err != nil {
+		fmt.Println("Error closing file:", err)
+		return
+	}
 
 	// 4) Read content manually using a byte buffer and file.Read.
 	buf := make([]byte, fileInfo.Size())
@@ -70,5 +75,59 @@ func main() {
 	for _, info := range infos {
 		fmt.Println("Name:", info.Name(), "IsDir:", info.IsDir())
 	}
+
+	// copy the content of example.txt to example1.txt
+	srcFile, err := os.Open("example.txt")
+	if err != nil {
+		fmt.Println("Error opening source file:", err)
+		return
+	}
+
+	defer srcFile.Close()
+
+	destFile, err := os.Create("example1.txt")
+	if err != nil {
+		fmt.Println("Error creating destination file:", err)
+		return
+	}
+
+	reader := bufio.NewReader(srcFile)
+	writer := bufio.NewWriter(destFile)
+
+	for {
+		line, err := reader.ReadBytes('\n')
+		if len(line) > 0 {
+			_, werr := writer.Write(line)
+			if werr != nil {
+				fmt.Println("Error writing line:", werr)
+				return
+			}
+		}
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			fmt.Println("Error reading line:", err)
+			return
+		}
+	}
+	if err := writer.Flush(); err != nil {
+		fmt.Println("Error flushing writer:", err)
+		return
+	}
+	fmt.Println("Written to new file successfully")
+
+	if err := destFile.Close(); err != nil {
+		fmt.Println("Error closing destination file:", err)
+		return
+	}
+
+	// delete a file
+	err = os.Remove("example1.txt")
+	if err != nil {
+		fmt.Println("Error deleting file:", err)
+		return
+	}
+	fmt.Println("File deleted successfully.")
 
 }
